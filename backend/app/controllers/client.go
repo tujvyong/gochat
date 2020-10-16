@@ -69,7 +69,7 @@ func (c *Client) readPump() {
 
 		var userSend ClientSend
 		if err := json.Unmarshal(message, &userSend); err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 		// Add username in here, because this program used fake user.
 		userSend.Username = c.User.Username
@@ -101,7 +101,7 @@ func (c *Client) writePump() {
 				log.Println(err)
 				return
 			}
-			log.Println(string(message))
+			// log.Println(string(message))
 			w.Write(message)
 
 			if err := w.Close(); err != nil {
@@ -132,7 +132,7 @@ func (c *Client) MessagePump() {
 	for {
 		iface, err := pubsub.Receive()
 		if err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 
 		switch v := iface.(type) {
@@ -159,7 +159,7 @@ func (c *Client) GetMessages(channelName string) {
 	for i := 0; i < len(logs); i++ {
 		var tmp ChatMessage
 		if err := json.Unmarshal([]byte(logs[i]), &tmp); err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 		messages[i] = &tmp
 	}
@@ -170,7 +170,7 @@ func (c *Client) GetMessages(channelName string) {
 	}
 	data, err := json.Marshal(messagesLog)
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	c.Send <- data
 }
@@ -201,6 +201,6 @@ func ConnectUser(rdb *redis.Client, channelName string) (*models.User, error) {
 
 func (c *Client) DisconnectUser(rdb *redis.Client) {
 	if err := rdb.HDel(c.Channel, c.User.Id).Err(); err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 }

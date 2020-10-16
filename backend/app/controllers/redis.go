@@ -16,7 +16,7 @@ var RedisDB *redis.Client
 
 func init() {
 	RedisDB = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6378",
+		Addr:     "gochat_redis:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -28,13 +28,13 @@ func ZaddLog(channelName string, chatLog *ChatMessage) {
 
 	data, err := json.Marshal(chatLog)
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	if err := RedisDB.ZAdd(logsKey, redis.Z{
 		Score:  float64(now),
 		Member: data,
 	}).Err(); err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 }
 
@@ -47,11 +47,11 @@ func PublishToRedis(channelName string, msg interface{}) {
 		}
 		data, err := json.Marshal(users)
 		if err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 		err = RedisDB.Publish(channelName, data).Err()
 		if err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 	case *ChatMessage:
 		var newMsg = &ServerSend{
@@ -60,11 +60,11 @@ func PublishToRedis(channelName string, msg interface{}) {
 		}
 		data, err := json.Marshal(newMsg)
 		if err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 		err = RedisDB.Publish(channelName, data).Err()
 		if err != nil {
-			log.Fatalln(err)
+			log.Panic(err)
 		}
 		ZaddLog(channelName, msg.(*ChatMessage))
 	default:

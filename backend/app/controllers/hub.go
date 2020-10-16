@@ -48,10 +48,8 @@ func (h *Hub) Run() {
 			}
 			PublishToRedis(userSend.Channel, newMsg)
 		case message := <-h.Received:
-			// webサーバーにあるユーザー（Hub）の中の同じチャンネルを持つ者たち
 			for _, client := range h.Clients {
 				if client.Channel == message.Channel {
-					// log.Println(client.User.Id)
 					client.Send <- []byte(message.Payload)
 				}
 			}
@@ -94,7 +92,7 @@ func (h *Hub) GetUsers(channelName string) ([]*models.User, error) {
 func (h *Hub) SendUserList(channelName string) {
 	users, err := h.GetUsers(channelName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	PublishToRedis(channelName, users)
 }

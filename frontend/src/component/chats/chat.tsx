@@ -131,8 +131,8 @@ const Chat: React.FC = () => {
         <div className={classes.toolbar} />
         <div className={classes.inner}>
           <List className={classes.list} ref={scrollRef}>
-            {state.msg.map(msg => (
-              <ListItem className={classes.chatItem} key={msg.text} >
+            {state.msg.map((msg, index) => (
+              <ListItem className={classes.chatItem} key={index} >
                 <ListItemAvatar>
                   <Avatar alt="Avatar" />
                 </ListItemAvatar>

@@ -23,7 +23,7 @@ func APIError(w http.ResponseWriter, errMessage string, code int) {
 	w.WriteHeader(code)
 	jsonError, err := json.Marshal(JSONError{Error: errMessage, Code: code})
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	w.Write(jsonError)
 }
@@ -65,11 +65,11 @@ func ServeWs(w http.ResponseWriter, r *http.Request, hub *Hub) {
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 	user, err := ConnectUser(RedisDB, channelName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Panic(err)
 	}
 
 	client := &Client{
@@ -105,5 +105,6 @@ func StartWebServer() error {
 	})
 	router.Use(forCORS)
 
+	fmt.Printf("\n\033[32mStart Web Server on port :%v\033[0m\n", config.Config.Port)
 	return http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), router)
 }

@@ -1,0 +1,30 @@
+version: '3'
+volumes:
+  redis-store:
+services:
+  redis:
+    image: redis:latest
+    container_name: gochat_redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-store:/data
+    networks:
+      - gochat_net
+  backend:
+    build: ./backend
+    image: gochat/backend
+    container_name: gochat_golang
+    tty: true
+    depends_on:
+      - redis
+    ports:
+      - 8080:8080
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - gochat_net
+
+networks:
+  gochat_net:
+    driver: bridge
