@@ -125,7 +125,6 @@ func (c *Client) MessagePump() {
 	}
 	defer func() {
 		pubsub.Close()
-		log.Println("GetRedisMessage closed")
 		c.DisconnectUser(RedisDB)
 	}()
 
@@ -138,6 +137,7 @@ func (c *Client) MessagePump() {
 		switch v := iface.(type) {
 		case *redis.Subscription:
 			if v.Kind == "unsubscribe" {
+				log.Printf("Unsubscribe %v\n", v.Channel)
 				break
 			}
 		case *redis.Message:

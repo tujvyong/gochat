@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"gochat/app/models"
 	"log"
@@ -73,18 +74,20 @@ func (h *Hub) GetPubsub(channelName string) *redis.PubSub {
 }
 
 func (h *Hub) GetUsers(channelName string) ([]*models.User, error) {
-	keys, err := RedisDB.HKeys(channelName).Result()
+	usersData, err := RedisDB.HGetAll(channelName).Result()
 	if err != nil {
 		return nil, err
 	}
-	// 同じサーバー内のユーザーしか取れない。
-	var users []*models.User
-	for _, c := range h.Clients {
-		for _, k := range keys {
-			if c.User.Id == k {
-				users = append(users, c.User)
-			}
+
+	var users = make([]*models.User, len(usersData))
+	i := 0
+	for _, user := range usersData {
+		var tmp *models.User
+		if err := json.Unmarshal([]byte(user), &tmp); err != nil {
+			log.Panic(err)
 		}
+		users[i] = tmp
+		i++
 	}
 	return users, nil
 }

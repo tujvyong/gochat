@@ -7,6 +7,8 @@ import (
 	"gochat/utils"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"regexp"
 
 	"github.com/gorilla/mux"
@@ -93,6 +95,13 @@ func ServeWs(w http.ResponseWriter, r *http.Request, hub *Hub) {
 	// 同じサーバー内しか参照できない
 	hub.SendUserList(channelName)
 	client.GetMessages(channelName)
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	client.DisconnectUser(RedisDB)
+	client.Conn.Close()
+	os.Exit(1)
 }
 
 func StartWebServer() error {
