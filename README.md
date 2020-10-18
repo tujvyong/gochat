@@ -1,4 +1,5 @@
 # Golang × React Chat Demo
+![Demo](https://user-images.githubusercontent.com/61624833/96363076-f507c780-116c-11eb-84fa-359d45bf14da.gif)
 GolangでWebsockets, Redisを使用した簡易チャットアプリ<br>
 Webサーバーをscallableにするため、RedisのPubsubを活用。<br>
 
