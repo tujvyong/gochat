@@ -28,13 +28,13 @@ func ZaddLog(channelName string, chatLog *ChatMessage) {
 
 	data, err := json.Marshal(chatLog)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 	if err := RedisDB.ZAdd(logsKey, redis.Z{
 		Score:  float64(now),
 		Member: data,
 	}).Err(); err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 }
 
@@ -47,11 +47,11 @@ func PublishToRedis(channelName string, msg interface{}) {
 		}
 		data, err := json.Marshal(users)
 		if err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 		err = RedisDB.Publish(channelName, data).Err()
 		if err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 	case *ChatMessage:
 		var newMsg = &ServerSend{
@@ -60,11 +60,11 @@ func PublishToRedis(channelName string, msg interface{}) {
 		}
 		data, err := json.Marshal(newMsg)
 		if err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 		err = RedisDB.Publish(channelName, data).Err()
 		if err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 		ZaddLog(channelName, msg.(*ChatMessage))
 	default:

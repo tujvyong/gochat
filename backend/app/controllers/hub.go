@@ -84,7 +84,7 @@ func (h *Hub) GetUsers(channelName string) ([]*models.User, error) {
 	for _, user := range usersData {
 		var tmp *models.User
 		if err := json.Unmarshal([]byte(user), &tmp); err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 		users[i] = tmp
 		i++
@@ -95,7 +95,7 @@ func (h *Hub) GetUsers(channelName string) ([]*models.User, error) {
 func (h *Hub) SendUserList(channelName string) {
 	users, err := h.GetUsers(channelName)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 	PublishToRedis(channelName, users)
 }

@@ -51,7 +51,7 @@ type ChatMessage struct {
 func (c *Client) readPump() {
 	defer func() {
 		c.Hub.Unregister <- c
-		log.Println("readPunp closed", c.User.Id)
+		log.Println("readPump closed", c.User.Id, ContainerID)
 		c.DisconnectUser(RedisDB)
 		c.Conn.Close()
 	}()
@@ -69,7 +69,7 @@ func (c *Client) readPump() {
 
 		var userSend ClientSend
 		if err := json.Unmarshal(message, &userSend); err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 		// Add username in here, because this program used fake user.
 		userSend.Username = c.User.Username
@@ -81,7 +81,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		log.Println("writePunp closed", c.User.Id)
+		log.Println("writePump closed", c.User.Id, ContainerID)
 		c.Hub.SendUserList(c.Channel)
 		c.DisconnectUser(RedisDB)
 		c.Conn.Close()
@@ -121,7 +121,7 @@ func (c *Client) writePump() {
 func (c *Client) MessagePump() {
 	pubsub := c.Hub.GetPubsub(c.Channel)
 	if pubsub == nil {
-		log.Fatalf("Can't find pubsub channel on Hub: %v", c.Channel)
+		log.Fatalf("Can't find pubsub channel on Hub: %v %v", c.Channel, ContainerID)
 	}
 	defer func() {
 		pubsub.Close()
@@ -131,7 +131,7 @@ func (c *Client) MessagePump() {
 	for {
 		iface, err := pubsub.Receive()
 		if err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 
 		switch v := iface.(type) {
@@ -159,7 +159,7 @@ func (c *Client) GetMessages(channelName string) {
 	for i := 0; i < len(logs); i++ {
 		var tmp ChatMessage
 		if err := json.Unmarshal([]byte(logs[i]), &tmp); err != nil {
-			log.Panic(err)
+			log.Panic(err, ContainerID)
 		}
 		messages[i] = &tmp
 	}
@@ -170,7 +170,7 @@ func (c *Client) GetMessages(channelName string) {
 	}
 	data, err := json.Marshal(messagesLog)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 	c.Send <- data
 }

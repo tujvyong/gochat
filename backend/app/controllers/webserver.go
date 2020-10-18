@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"gochat/config"
@@ -8,12 +9,26 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"regexp"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
+
+var ContainerID string
+
+func init() {
+	out, err := exec.Command("cat", "/etc/hostname").Output()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	out = out[:len(out)-1]
+	buf := bytes.NewBufferString("Container ID: ")
+	buf.Write(out)
+	ContainerID = buf.String()
+}
 
 type JSONError struct {
 	Error string `json:"error"`
@@ -25,7 +40,7 @@ func APIError(w http.ResponseWriter, errMessage string, code int) {
 	w.WriteHeader(code)
 	jsonError, err := json.Marshal(JSONError{Error: errMessage, Code: code})
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 	w.Write(jsonError)
 }
@@ -67,11 +82,11 @@ func ServeWs(w http.ResponseWriter, r *http.Request, hub *Hub) {
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 	user, err := ConnectUser(RedisDB, channelName)
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err, ContainerID)
 	}
 
 	client := &Client{
@@ -92,7 +107,6 @@ func ServeWs(w http.ResponseWriter, r *http.Request, hub *Hub) {
 	go client.writePump()
 	go client.readPump()
 
-	// 同じサーバー内しか参照できない
 	hub.SendUserList(channelName)
 	client.GetMessages(channelName)
 
@@ -114,6 +128,6 @@ func StartWebServer() error {
 	})
 	router.Use(forCORS)
 
-	fmt.Printf("\n\033[32mStart Web Server on port :%v\033[0m\n", config.Config.Port)
+	log.Printf("Start Web Server on port :%v %v\n", config.Config.Port, ContainerID)
 	return http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), router)
 }
